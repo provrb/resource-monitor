@@ -11,10 +11,10 @@ fn main() {
 
     println!("CPU Information");
     println!("Product Details");
-    println!("Brand:     {}", rsrc.cpu_info.brand);
-    println!("Vendor ID: {}", rsrc.cpu_info.vendor_id);
-    println!("Frequency: {} GHz",  rsrc.cpu_info.frequency / 1000.0);
-    println!("Cores:     {}", rsrc.cpu_info.core_count);
+    println!("Brand:     {}", rsrc.cpu.brand);
+    println!("Vendor ID: {}", rsrc.cpu.vendor_id);
+    println!("Frequency: {:.2} GHz", rsrc.cpu.get_cpu_frequency_ghz());
+    println!("Cores:     {}", rsrc.cpu.core_count);
     println!();
     println!("Performance Details");
     println!("CPU Usage:         {} %", rsrc.get_cpu_usage() );
@@ -22,15 +22,15 @@ fn main() {
     println!("Total Memory:      {} GB", rsrc.total_memory_gb());
     println!("Available:         {} GB", rsrc.available_memory_gb());
     println!("Used:              {} GB", rsrc.used_memory_gb());
-    println!("Logical Processors ({}):", rsrc.cpu_info.processes.len());
-    for (index, core) in rsrc.cpu_info.processes.iter().enumerate() {
+    println!("Logical Processors ({}):", rsrc.cpu.processes.len());
+    for (index, core) in rsrc.cpu.processes.iter().enumerate() {
         if index > 2 {
             println!("    ... (truncated)");
             break; 
         }
         println!("    {}: {} MHz - Usage: {}% ", core.name, core.frequency, core.cpu_usage);
     }
-    
+
     println!();
 
     println!("System Info");
