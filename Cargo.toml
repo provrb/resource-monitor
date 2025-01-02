@@ -6,3 +6,5 @@ edition = "2021"
 [dependencies]
 sysinfo = "0.33.1"
 chrono = "0.4.39"
+windows = "0.48.0"
+windows-sys = "0.36.1"

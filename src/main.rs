@@ -1,5 +1,3 @@
-use sysinfo::Disks;
-
 // api
 mod api {
     pub mod monitor;

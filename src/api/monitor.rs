@@ -37,7 +37,7 @@ impl CPU {
      * to default values.
      */
     pub fn load_from_raw(raw_cpu: &sysinfo::Cpu) -> Self {        
-        let mut cpu = CPU::default();
+        let mut cpu = Self::default();
         cpu.brand = raw_cpu.brand().to_string();
         cpu.core_count = 0;
         cpu.cpu_usage = raw_cpu.cpu_usage();
@@ -64,7 +64,7 @@ impl SysResources {
      * with nothing loaded
      */
     pub fn new() -> SysResources {
-        SysResources {
+        Self {
             available_memory: 0,
             used_memory: 0,
             total_memory: 0,
@@ -83,6 +83,7 @@ impl SysResources {
     pub fn get_cpu_usage(&mut self) -> f32 {
         self.system.refresh_cpu_usage();
         std::thread::sleep(MINIMUM_CPU_UPDATE_INTERVAL);
+        self.system.refresh_cpu_usage();
         self.cpu.cpu_usage = self.system.global_cpu_usage();
 
         return self.cpu.cpu_usage
@@ -159,6 +160,27 @@ impl SysResources {
     }
 
     /**
+     * Load all information about the CPU
+     * and fill in all fields.
+     * Resource heavy, so only should be called once initially.
+     * If you want to update CPU info, call 
+     * reload_cpu_info instaed.
+     */
+    pub fn load_cpu_info(&mut self) {        
+        self.system.refresh_cpu_all();
+        
+        let raw_cpu: &sysinfo::Cpu = &self.system.cpus()[0];
+        
+        self.cpu.brand      = raw_cpu.brand().to_string();
+        self.cpu.core_count = self.system.physical_core_count().unwrap_or(0);
+        self.cpu.cpu_usage  = raw_cpu.cpu_usage();
+        self.cpu.frequency  = raw_cpu.frequency() as f64;
+        self.cpu.name       = raw_cpu.name().to_string();
+        self.cpu.vendor_id  = raw_cpu.vendor_id().to_string();
+        self.cpu.processes  = self.system.cpus().iter().map(CPU::load_from_raw).collect();
+    }
+    
+    /**
      * Update the usage and frequency of each
      * of the logical processes belonging to the
      * cpu. Information is saved directly to
@@ -166,7 +188,7 @@ impl SysResources {
      */
     fn reload_cpu_cores(&mut self) {
         let cores = self.system.cpus();
-
+    
         // load info about cpu cores
         for (index, core ) in cores.iter().enumerate() {
             // update info using index
@@ -188,29 +210,8 @@ impl SysResources {
         self.get_cpu_usage();
         
         let raw_cpu = self.system.cpus().get(0).unwrap();
-    
+        
         self.cpu.frequency  = raw_cpu.frequency() as f64;
         self.reload_cpu_cores();
-    }
-
-    /**
-     * Load all information about the CPU
-     * and fill in all fields.
-     * Resource heavy, so only should be called once initially.
-     * If you want to update CPU info, call 
-     * reload_cpu_info instaed.
-     */
-    pub fn load_cpu_info(&mut self) {        
-        self.system.refresh_cpu_all();
-
-        let raw_cpu: &sysinfo::Cpu = &self.system.cpus()[0];
-        
-        self.cpu.brand      = raw_cpu.brand().to_string();
-        self.cpu.core_count = self.system.physical_core_count().unwrap_or(0);
-        self.cpu.cpu_usage  = raw_cpu.cpu_usage();
-        self.cpu.frequency  = raw_cpu.frequency() as f64;
-        self.cpu.name       = raw_cpu.name().to_string();
-        self.cpu.vendor_id  = raw_cpu.vendor_id().to_string();
-        self.cpu.processes  = self.system.cpus().iter().map(CPU::load_from_raw).collect();
     }
 }
